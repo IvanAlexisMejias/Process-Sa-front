@@ -1,2 +1,0 @@
--- AddForeignKey
-ALTER TABLE "Unit" ADD CONSTRAINT "Unit_leadId_fkey" FOREIGN KEY ("leadId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

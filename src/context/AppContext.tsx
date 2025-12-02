@@ -148,6 +148,16 @@ interface InstantiateFlowPayload {
   kickoffDate: string;
   dueDate: string;
   name: string;
+  stageTasks?: {
+    stageId: string;
+    tasks: {
+      title: string;
+      description?: string;
+      priority?: Task['priority'];
+      dueInDays?: number;
+      ownerId?: string;
+    }[];
+  }[];
 }
 
 interface AppContextValue {
@@ -173,8 +183,11 @@ interface AppContextValue {
   updateUser: (payload: UpdateUserPayload) => Promise<void>;
   updateProfile: (payload: UpdateProfilePayload) => Promise<void>;
   createUnit: (payload: CreateUnitPayload) => Promise<void>;
+  updateUnit: (id: string, payload: CreateUnitPayload) => Promise<void>;
   createFlowTemplate: (payload: CreateFlowPayload) => Promise<void>;
   instantiateFlow: (payload: InstantiateFlowPayload) => Promise<void>;
+  deleteFlowTemplate: (id: string) => Promise<void>;
+  deleteFlowInstance: (id: string) => Promise<void>;
 }
 
 interface AppData {
@@ -423,6 +436,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     [authenticatedFetch, refreshAfterAction],
   );
 
+  const updateUnit = useCallback(
+    async (id: string, payload: CreateUnitPayload) => {
+      await authenticatedFetch(`/units/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      });
+      await refreshAfterAction();
+    },
+    [authenticatedFetch, refreshAfterAction],
+  );
+
   const createFlowTemplate = useCallback(
     async (payload: CreateFlowPayload) => {
       await authenticatedFetch('/flows/templates', {
@@ -445,6 +469,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     [authenticatedFetch, refreshAfterAction],
   );
 
+  const deleteFlowTemplate = useCallback(
+    async (id: string) => {
+      await authenticatedFetch(`/flows/templates/${id}`, { method: 'DELETE' });
+      await refreshAfterAction();
+    },
+    [authenticatedFetch, refreshAfterAction],
+  );
+
+  const deleteFlowInstance = useCallback(
+    async (id: string) => {
+      await authenticatedFetch(`/flows/instances/${id}`, { method: 'DELETE' });
+      await refreshAfterAction();
+    },
+    [authenticatedFetch, refreshAfterAction],
+  );
+
   const value = useMemo<AppContextValue>(
     () => ({
       token,
@@ -461,8 +501,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       updateUser,
       updateProfile,
       createUnit,
+      updateUnit,
       createFlowTemplate,
       instantiateFlow,
+      deleteFlowTemplate,
+      deleteFlowInstance,
     }),
     [
       token,
@@ -479,8 +522,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       updateUser,
       updateProfile,
       createUnit,
+      updateUnit,
       createFlowTemplate,
       instantiateFlow,
+      deleteFlowTemplate,
+      deleteFlowInstance,
     ],
   );
 

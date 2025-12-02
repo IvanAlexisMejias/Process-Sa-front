@@ -1,13 +1,31 @@
-﻿import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { useAppContext } from "@/context/AppContext";
 import { UseCaseChips } from "@/components/common/UseCaseChips";
 import type { RoleKey } from "@/types/domain";
 
-const stageTemplate = { name: "", description: "", expectedDurationDays: 2, ownerRole: "DESIGNER" as RoleKey };
+const stageTemplate = {
+  name: "",
+  description: "",
+  expectedDurationDays: 2,
+  ownerRole: "DESIGNER" as RoleKey,
+  exitCriteria: "",
+};
+
+const taskTemplate = { title: "", description: "", priority: "medium" as const, dueInDays: 3 };
 
 export const FlowsPage = () => {
-  const { flowTemplates, flowInstances, roles, units, createFlowTemplate, instantiateFlow } = useAppContext();
+  const {
+    flowTemplates,
+    flowInstances,
+    roles,
+    units,
+    users,
+    createFlowTemplate,
+    instantiateFlow,
+    deleteFlowTemplate,
+    deleteFlowInstance,
+  } = useAppContext();
   const [stageDraft, setStageDraft] = useState(stageTemplate);
   const [form, setForm] = useState({
     name: "",
@@ -17,26 +35,48 @@ export const FlowsPage = () => {
     ownerId: "",
   });
   const [stages, setStages] = useState<typeof flowTemplates[number]["stages"]>([]);
+  const [stageTasks, setStageTasks] = useState<Record<string, typeof taskTemplate[]>>({});
+  const [taskDraft, setTaskDraft] = useState<Record<string, typeof taskTemplate>>({});
 
   const [instanceForm, setInstanceForm] = useState({
-    templateId: flowTemplates[0]?.id ?? "",
-    ownerUnitId: units[0]?.id ?? "",
+    templateId: "",
+    ownerUnitId: "",
     name: "Ejecución personalizada",
     kickoffDate: new Date().toISOString().slice(0, 10),
     dueDate: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
   });
 
+  useEffect(() => {
+    setInstanceForm((prev) => ({
+      ...prev,
+      templateId: flowTemplates[0]?.id ?? "",
+      ownerUnitId: units[0]?.id ?? "",
+    }));
+  }, [flowTemplates, units]);
+
   const addStage = () => {
     if (!stageDraft.name) return;
+    const stageId = `stage-${stages.length + 1}`;
     setStages((prev) => [
       ...prev,
       {
-        id: `stage-${prev.length + 1}`,
+        id: stageId,
         ...stageDraft,
-        exitCriteria: "Por definir",
+        exitCriteria: stageDraft.exitCriteria || "Por definir",
       },
     ]);
+    setTaskDraft((prev) => ({ ...prev, [stageId]: taskTemplate }));
     setStageDraft(stageTemplate);
+  };
+
+  const addTaskToStage = (stageId: string) => {
+    const draft = taskDraft[stageId] ?? taskTemplate;
+    if (!draft.title) return;
+    setStageTasks((prev) => ({
+      ...prev,
+      [stageId]: [...(prev[stageId] ?? []), draft],
+    }));
+    setTaskDraft((prev) => ({ ...prev, [stageId]: taskTemplate }));
   };
 
   const handleTemplateSubmit = (event: FormEvent) => {
@@ -58,17 +98,49 @@ export const FlowsPage = () => {
       ownerId: "",
     });
     setStages([]);
+    setStageTasks({});
+    setTaskDraft({});
   };
 
   const handleInstanceSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (!instanceForm.templateId) return;
+    const selectedTemplate = flowTemplates.find((template) => template.id === instanceForm.templateId);
+    const payloadStageTasks =
+      selectedTemplate?.stages
+        .map((stage) => ({
+          stageId: stage.id,
+          tasks: (stageTasks[stage.id] ?? []).map((task) => ({
+            ...task,
+            priority: task.priority.toUpperCase(),
+          })),
+        }))
+        .filter((entry) => entry.tasks.length > 0) ?? [];
+
     instantiateFlow({
       ...instanceForm,
       kickoffDate: new Date(instanceForm.kickoffDate).toISOString(),
       dueDate: new Date(instanceForm.dueDate).toISOString(),
+      stageTasks: payloadStageTasks,
     });
   };
+
+  const handleDeleteTemplate = (id: string) => {
+    if (confirm("¿Eliminar esta plantilla? No debe tener instancias activas.")) {
+      deleteFlowTemplate(id);
+    }
+  };
+
+  const handleDeleteInstance = (id: string) => {
+    if (confirm("¿Eliminar esta instancia? Se borrarán sus tareas asociadas.")) {
+      deleteFlowInstance(id);
+    }
+  };
+
+  const stagesOfSelectedTemplate = useMemo(
+    () => flowTemplates.find((template) => template.id === instanceForm.templateId)?.stages ?? [],
+    [flowTemplates, instanceForm.templateId],
+  );
 
   return (
     <div className="grid" style={{ gap: "1.25rem" }}>
@@ -86,8 +158,15 @@ export const FlowsPage = () => {
             </label>
             <label className="field">
               <span className="field-label">Responsable principal</span>
-              <input value={form.ownerId} onChange={(event) => setForm((prev) => ({ ...prev, ownerId: event.target.value }))} placeholder="ID de usuario" />
-              <span className="field-hint">Puedes copiarlo desde la tabla de usuarios.</span>
+              <select value={form.ownerId} onChange={(event) => setForm((prev) => ({ ...prev, ownerId: event.target.value }))}>
+                <option value="">Selecciona un dueño</option>
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.fullName}
+                  </option>
+                ))}
+              </select>
+              <span className="field-hint">Define quién mantiene la plantilla.</span>
             </label>
             <label className="field">
               <span className="field-label">Duración típica (días)</span>
@@ -114,7 +193,7 @@ export const FlowsPage = () => {
               padding: "1rem",
             }}
           >
-            <h3 style={{ marginTop: 0 }}>Etapas del flujo</h3>
+            <h3 style={{ marginTop: 0 }}>Etapas del flujo y tareas</h3>
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
               {stages.map((stage) => (
                 <span key={stage.id} className="tag">
@@ -149,12 +228,82 @@ export const FlowsPage = () => {
                   onChange={(event) => setStageDraft((prev) => ({ ...prev, expectedDurationDays: Number(event.target.value) }))}
                 />
               </label>
+              <label className="field">
+                <span className="field-label">Criterio de salida</span>
+                <input
+                  value={stageDraft.exitCriteria}
+                  onChange={(event) => setStageDraft((prev) => ({ ...prev, exitCriteria: event.target.value }))}
+                  placeholder="Documento firmado, validación, etc."
+                />
+              </label>
               <div style={{ alignSelf: "end" }}>
                 <button type="button" className="btn btn-outline" onClick={addStage}>
                   Agregar etapa
                 </button>
               </div>
             </div>
+            {stages.map((stage) => (
+              <div key={stage.id} style={{ marginTop: "0.75rem", padding: "0.75rem", borderRadius: "var(--radius)", background: "var(--bg-muted)" }}>
+                <strong>{stage.name}</strong>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", margin: "0.5rem 0" }}>
+                  {(stageTasks[stage.id] ?? []).map((task, idx) => (
+                    <span key={`${stage.id}-task-${idx}`} className="tag">
+                      {task.title} · {task.priority}
+                    </span>
+                  ))}
+                  {(stageTasks[stage.id] ?? []).length === 0 && (
+                    <small style={{ color: "var(--text-muted)" }}>Aún sin tareas</small>
+                  )}
+                </div>
+                <div className="form-grid">
+                  <input
+                    placeholder="Título de tarea"
+                    value={(taskDraft[stage.id] ?? taskTemplate).title}
+                    onChange={(event) =>
+                      setTaskDraft((prev) => ({ ...prev, [stage.id]: { ...(prev[stage.id] ?? taskTemplate), title: event.target.value } }))
+                    }
+                  />
+                  <input
+                    placeholder="Descripción breve"
+                    value={(taskDraft[stage.id] ?? taskTemplate).description}
+                    onChange={(event) =>
+                      setTaskDraft((prev) => ({ ...prev, [stage.id]: { ...(prev[stage.id] ?? taskTemplate), description: event.target.value } }))
+                    }
+                  />
+                  <select
+                    value={(taskDraft[stage.id] ?? taskTemplate).priority}
+                    onChange={(event) =>
+                      setTaskDraft((prev) => ({
+                        ...prev,
+                        [stage.id]: { ...(prev[stage.id] ?? taskTemplate), priority: event.target.value as any },
+                      }))
+                    }
+                  >
+                    <option value="low">Baja</option>
+                    <option value="medium">Media</option>
+                    <option value="high">Alta</option>
+                    <option value="critical">Crítica</option>
+                  </select>
+                  <input
+                    type="number"
+                    min={1}
+                    value={(taskDraft[stage.id] ?? taskTemplate).dueInDays}
+                    onChange={(event) =>
+                      setTaskDraft((prev) => ({
+                        ...prev,
+                        [stage.id]: { ...(prev[stage.id] ?? taskTemplate), dueInDays: Number(event.target.value) },
+                      }))
+                    }
+                    placeholder="Días para vencer"
+                  />
+                  <div style={{ alignSelf: "end" }}>
+                    <button type="button" className="btn btn-outline" onClick={() => addTaskToStage(stage.id)}>
+                      Agregar tarea
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
           <div>
             <button type="submit" className="btn btn-primary">
@@ -204,6 +353,66 @@ export const FlowsPage = () => {
               onChange={(event) => setInstanceForm((prev) => ({ ...prev, dueDate: event.target.value }))}
             />
           </label>
+          <div style={{ gridColumn: "1/-1", background: "var(--bg-muted)", borderRadius: "var(--radius)", padding: "0.75rem" }}>
+            <p style={{ margin: "0 0 0.5rem", color: "var(--text-muted)" }}>Tareas por etapa (opcional)</p>
+            <div className="grid two">
+              {stagesOfSelectedTemplate.map((stage) => (
+                <div key={stage.id} style={{ border: "1px dashed var(--border-soft)", borderRadius: "var(--radius)", padding: "0.75rem" }}>
+                  <strong>{stage.name}</strong>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", margin: "0.4rem 0" }}>
+                    {(stageTasks[stage.id] ?? []).map((task, idx) => (
+                      <span key={`${stage.id}-inst-task-${idx}`} className="tag">
+                        {task.title} · {task.priority}
+                      </span>
+                    ))}
+                    {(stageTasks[stage.id] ?? []).length === 0 && (
+                      <small style={{ color: "var(--text-muted)" }}>Sin tareas asignadas aún</small>
+                    )}
+                  </div>
+                  <div className="form-grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", marginTop: "0.25rem" }}>
+                    <input
+                      placeholder="Título de tarea"
+                      value={(taskDraft[stage.id] ?? taskTemplate).title}
+                      onChange={(event) =>
+                        setTaskDraft((prev) => ({ ...prev, [stage.id]: { ...(prev[stage.id] ?? taskTemplate), title: event.target.value } }))
+                      }
+                    />
+                    <select
+                      value={(taskDraft[stage.id] ?? taskTemplate).priority}
+                      onChange={(event) =>
+                        setTaskDraft((prev) => ({
+                          ...prev,
+                          [stage.id]: { ...(prev[stage.id] ?? taskTemplate), priority: event.target.value as any },
+                        }))
+                      }
+                    >
+                      <option value="low">Baja</option>
+                      <option value="medium">Media</option>
+                      <option value="high">Alta</option>
+                      <option value="critical">Crítica</option>
+                    </select>
+                    <input
+                      type="number"
+                      min={1}
+                      value={(taskDraft[stage.id] ?? taskTemplate).dueInDays}
+                      onChange={(event) =>
+                        setTaskDraft((prev) => ({
+                          ...prev,
+                          [stage.id]: { ...(prev[stage.id] ?? taskTemplate), dueInDays: Number(event.target.value) },
+                        }))
+                      }
+                      placeholder="Días para vencer"
+                    />
+                    <div style={{ alignSelf: "end" }}>
+                      <button type="button" className="btn btn-outline" onClick={() => addTaskToStage(stage.id)}>
+                        Agregar tarea
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
           <div style={{ alignSelf: "end" }}>
             <button type="submit" className="btn btn-primary">
               Ejecutar flujo
@@ -227,6 +436,11 @@ export const FlowsPage = () => {
                   </span>
                 ))}
               </div>
+              <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem" }}>
+                <button type="button" className="btn btn-outline" onClick={() => handleDeleteTemplate(template.id)}>
+                  Eliminar
+                </button>
+              </div>
             </article>
           ))}
         </div>
@@ -241,6 +455,7 @@ export const FlowsPage = () => {
               <th>Unidad</th>
               <th>Avance</th>
               <th>Salud</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -250,6 +465,11 @@ export const FlowsPage = () => {
                 <td>{units.find((unit) => unit.id === instance.ownerUnitId)?.name}</td>
                 <td>{instance.progress}%</td>
                 <td>{instance.health}</td>
+                <td style={{ textAlign: "right" }}>
+                  <button type="button" className="btn btn-outline" onClick={() => handleDeleteInstance(instance.id)}>
+                    Eliminar
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

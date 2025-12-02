@@ -122,42 +122,70 @@ export const OverviewPage = () => {
 
       <section className="card">
         <h2 className="section-title">Tendencia de rendimiento</h2>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          {metrics.map((metric) => (
-            <div key={metric.date} style={{ flex: 1 }}>
-              <small style={{ color: 'var(--text-muted)' }}>
-                {new Date(metric.date).toLocaleDateString()}
-              </small>
-              <div
-                style={{
-                  height: '120px',
-                  borderRadius: 'var(--radius)',
-                  background: 'var(--bg-muted)',
-                  padding: '0.5rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'flex-end',
-                  gap: '0.15rem',
-                }}
-              >
-                <div
-                  style={{
-                    height: `${metric.completed}px`,
-                    background: 'var(--success)',
-                    borderRadius: '999px',
-                  }}
-                />
-                <div
-                  style={{
-                    height: `${metric.delayed * 2}px`,
-                    background: 'var(--warning)',
-                    borderRadius: '999px',
-                  }}
-                />
-              </div>
+        {metrics.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)' }}>Sin datos de rendimiento aún.</p>
+        ) : (
+          <div style={{ display: 'grid', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.9rem' }}>
+              <span className="tag" style={{ background: 'rgba(76, 175, 80, 0.15)', color: 'var(--success)' }}>
+                Completadas
+              </span>
+              <span className="tag" style={{ background: 'rgba(245, 166, 35, 0.15)', color: 'var(--warning)' }}>
+                Retrasadas
+              </span>
             </div>
-          ))}
-        </div>
+            {(() => {
+              const maxValue = Math.max(...metrics.map((m) => m.completed + m.delayed), 1);
+              return (
+                <div
+              style={{
+                display: 'flex',
+                gap: '0.75rem',
+                alignItems: 'flex-end',
+                minHeight: '160px',
+                padding: '0.75rem',
+                borderRadius: 'var(--radius)',
+                background: 'linear-gradient(180deg, rgba(12,30,66,0.04), rgba(12,30,66,0.02))',
+              }}
+            >
+              {metrics.map((metric) => {
+                const completedHeight = Math.max((metric.completed / maxValue) * 120, 4);
+                const delayedHeight = Math.max((metric.delayed / maxValue) * 120, 2);
+                return (
+                  <div key={metric.date} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.15rem', minHeight: '120px' }}>
+                      <div
+                        style={{
+                          width: '14px',
+                          height: `${completedHeight}px`,
+                          borderRadius: '10px',
+                          background: 'linear-gradient(180deg, #4caf50, #2e7d32)',
+                          boxShadow: '0 6px 12px rgba(46, 125, 50, 0.18)',
+                        }}
+                        title={`Completadas: ${metric.completed}`}
+                      />
+                      <div
+                        style={{
+                          width: '14px',
+                          height: `${delayedHeight}px`,
+                          borderRadius: '10px',
+                          background: 'linear-gradient(180deg, #f5a623, #e07a00)',
+                          boxShadow: '0 6px 12px rgba(224, 122, 0, 0.2)',
+                        }}
+                        title={`Retrasadas: ${metric.delayed}`}
+                      />
+                    </div>
+                    <small style={{ color: 'var(--text-muted)', textAlign: 'center' }}>
+                      {new Date(metric.date).toLocaleDateString()}
+                    </small>
+                  </div>
+                );
+              })}
+            </div>
+              );
+            })()}
+          </div>
+        )}
       </section>
 
       <section className="card">

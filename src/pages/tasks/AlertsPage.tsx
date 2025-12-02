@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { UseCaseChips } from '@/components/common/UseCaseChips';
+import { useToast } from '@/context/ToastContext';
 
 export const AlertsPage = () => {
-  const { tasks, notifications } = useAppContext();
+  const { tasks, notifications, changeTaskStatus, resolveProblem } = useAppContext();
+  const { showToast } = useToast();
 
   const alertTasks = useMemo(
     () =>
@@ -54,6 +56,7 @@ export const AlertsPage = () => {
               <th>Estado</th>
               <th>Plazo</th>
               <th>Problemas abiertos</th>
+              <th style={{ textAlign: 'right' }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -65,6 +68,28 @@ export const AlertsPage = () => {
                 </td>
                 <td>{new Date(task.deadline).toLocaleDateString()}</td>
                 <td>{task.problems.length}</td>
+                <td style={{ textAlign: 'right', display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    onClick={() => {
+                      changeTaskStatus(task.id, task.status === 'blocked' ? 'in_progress' : 'blocked');
+                      showToast('Estado actualizado', 'info');
+                    }}
+                  >
+                    {task.status === 'blocked' ? 'Desbloquear' : 'Bloquear'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => {
+                      changeTaskStatus(task.id, 'completed');
+                      showToast('Tarea marcada como completada', 'success');
+                    }}
+                  >
+                    Completar
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -87,6 +112,20 @@ export const AlertsPage = () => {
                       <small style={{ color: 'var(--text-muted)' }}>
                         ({new Date(problem.createdAt).toLocaleString()})
                       </small>
+                      {problem.status === 'open' && (
+                        <button
+                          type="button"
+                          className="btn btn-outline"
+                          style={{ marginLeft: '0.5rem' }}
+                          onClick={() => {
+                            const resolution = prompt('Describe la resolución (opcional)');
+                            resolveProblem(problem.id, resolution ?? undefined);
+                            showToast('Problema resuelto', 'success');
+                          }}
+                        >
+                          Marcar resuelto
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ul>

@@ -5,7 +5,7 @@ import { UseCaseChips } from '@/components/common/UseCaseChips';
 import { useToast } from '@/context/ToastContext';
 
 export const UnitsPage = () => {
-  const { units, users, createUnit, updateUnit } = useAppContext();
+  const { units, users, createUnit, updateUnit, deleteUnit } = useAppContext();
   const { showToast } = useToast();
   const [form, setForm] = useState({
     name: '',
@@ -110,9 +110,34 @@ export const UnitsPage = () => {
                     <small style={{ color: 'var(--text-muted)' }}>
                       · {users.find((user) => user.id === child.leadId)?.fullName ?? 'sin líder'}
                     </small>
+                    <button
+                      type="button"
+                      className="btn btn-outline"
+                      style={{ marginLeft: '0.5rem' }}
+                      onClick={() => {
+                        if (confirm('¿Eliminar unidad? Debe estar sin usuarios ni flujos.')) {
+                          deleteUnit(child.id);
+                          showToast('Unidad eliminada', 'info');
+                        }
+                      }}
+                    >
+                      Eliminar
+                    </button>
                   </li>
                 ))}
               </ul>
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => {
+                  if (confirm('¿Eliminar unidad? Debe estar sin usuarios ni flujos.')) {
+                    deleteUnit(root.id);
+                    showToast('Unidad eliminada', 'info');
+                  }
+                }}
+              >
+                Eliminar unidad
+              </button>
             </div>
           ))}
         </div>

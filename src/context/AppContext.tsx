@@ -179,12 +179,15 @@ interface AppContextValue {
   updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
   changeTaskStatus: (taskId: string, status: TaskStatus, progress?: number) => Promise<void>;
   reportProblem: (taskId: string, description: string) => Promise<void>;
+  resolveProblem: (problemId: string, resolution?: string) => Promise<void>;
   createUser: (payload: CreateUserPayload) => Promise<void>;
   updateUser: (payload: UpdateUserPayload) => Promise<void>;
   updateProfile: (payload: UpdateProfilePayload) => Promise<void>;
   createUnit: (payload: CreateUnitPayload) => Promise<void>;
+  deleteUnit: (id: string) => Promise<void>;
   updateUnit: (id: string, payload: CreateUnitPayload) => Promise<void>;
   createFlowTemplate: (payload: CreateFlowPayload) => Promise<void>;
+  updateFlowTemplate: (id: string, payload: Partial<CreateFlowPayload>) => Promise<void>;
   instantiateFlow: (payload: InstantiateFlowPayload) => Promise<void>;
   deleteFlowTemplate: (id: string) => Promise<void>;
   deleteFlowInstance: (id: string) => Promise<void>;
@@ -387,6 +390,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     [authenticatedFetch, refreshAfterAction],
   );
 
+  const resolveProblem = useCallback(
+    async (problemId: string, resolution?: string) => {
+      await authenticatedFetch(`/tasks/problems/${problemId}/resolve`, {
+        method: 'PATCH',
+        body: JSON.stringify({ resolution }),
+      });
+      await refreshAfterAction();
+    },
+    [authenticatedFetch, refreshAfterAction],
+  );
+
   const createUser = useCallback(
     async (payload: CreateUserPayload) => {
       await authenticatedFetch('/users', {
@@ -436,6 +450,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     [authenticatedFetch, refreshAfterAction],
   );
 
+  const deleteUnit = useCallback(
+    async (id: string) => {
+      await authenticatedFetch(`/units/${id}`, { method: 'DELETE' });
+      await refreshAfterAction();
+    },
+    [authenticatedFetch, refreshAfterAction],
+  );
+
   const updateUnit = useCallback(
     async (id: string, payload: CreateUnitPayload) => {
       await authenticatedFetch(`/units/${id}`, {
@@ -451,6 +473,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     async (payload: CreateFlowPayload) => {
       await authenticatedFetch('/flows/templates', {
         method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      await refreshAfterAction();
+    },
+    [authenticatedFetch, refreshAfterAction],
+  );
+
+  const updateFlowTemplate = useCallback(
+    async (id: string, payload: Partial<CreateFlowPayload>) => {
+      await authenticatedFetch(`/flows/templates/${id}`, {
+        method: 'PATCH',
         body: JSON.stringify(payload),
       });
       await refreshAfterAction();
@@ -497,12 +530,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       updateTask,
       changeTaskStatus,
       reportProblem,
+      resolveProblem,
       createUser,
       updateUser,
       updateProfile,
       createUnit,
+      deleteUnit,
       updateUnit,
       createFlowTemplate,
+      updateFlowTemplate,
       instantiateFlow,
       deleteFlowTemplate,
       deleteFlowInstance,
@@ -518,12 +554,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       updateTask,
       changeTaskStatus,
       reportProblem,
+      resolveProblem,
       createUser,
       updateUser,
       updateProfile,
       createUnit,
+      deleteUnit,
       updateUnit,
       createFlowTemplate,
+      updateFlowTemplate,
       instantiateFlow,
       deleteFlowTemplate,
       deleteFlowInstance,

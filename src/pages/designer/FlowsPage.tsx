@@ -14,7 +14,7 @@ const stageTemplate = {
   exitCriteria: "",
 };
 
-const taskTemplate = { title: "", description: "", priority: "medium" as const, dueInDays: 3 };
+const taskTemplate = { title: "", description: "", priority: "medium" as const, dueInDays: 3, ownerId: undefined as string | undefined };
 
 export const FlowsPage = () => {
   const {
@@ -40,6 +40,8 @@ export const FlowsPage = () => {
   const [stages, setStages] = useState<typeof flowTemplates[number]["stages"]>([]);
   const [stageTasks, setStageTasks] = useState<Record<string, typeof taskTemplate[]>>({});
   const [taskDraft, setTaskDraft] = useState<Record<string, typeof taskTemplate>>({});
+  const [instStageTasks, setInstStageTasks] = useState<Record<string, typeof taskTemplate[]>>({});
+  const [instTaskDraft, setInstTaskDraft] = useState<Record<string, typeof taskTemplate>>({});
 
   const [instanceForm, setInstanceForm] = useState({
     templateId: "",
@@ -55,6 +57,8 @@ export const FlowsPage = () => {
       templateId: flowTemplates[0]?.id ?? "",
       ownerUnitId: units[0]?.id ?? "",
     }));
+    setInstStageTasks({});
+    setInstTaskDraft({});
   }, [flowTemplates, units]);
 
   const addStage = () => {
@@ -114,7 +118,7 @@ export const FlowsPage = () => {
       selectedTemplate?.stages
         .map((stage) => ({
           stageId: stage.id,
-          tasks: (stageTasks[stage.id] ?? []).map((task) => ({
+          tasks: (instStageTasks[stage.id] ?? []).map((task) => ({
             ...task,
             priority: task.priority.toUpperCase() as Uppercase<Task["priority"]>,
           })),
@@ -386,27 +390,27 @@ export const FlowsPage = () => {
                 <div key={stage.id} style={{ border: "1px dashed var(--border-soft)", borderRadius: "var(--radius)", padding: "0.75rem" }}>
                   <strong>{stage.name}</strong>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", margin: "0.4rem 0" }}>
-                    {(stageTasks[stage.id] ?? []).map((task, idx) => (
+                    {(instStageTasks[stage.id] ?? []).map((task, idx) => (
                       <span key={`${stage.id}-inst-task-${idx}`} className="tag">
                         {task.title} · {task.priority}
                       </span>
                     ))}
-                    {(stageTasks[stage.id] ?? []).length === 0 && (
+                    {(instStageTasks[stage.id] ?? []).length === 0 && (
                       <small style={{ color: "var(--text-muted)" }}>Sin tareas asignadas aún</small>
                     )}
                   </div>
                   <div className="form-grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", marginTop: "0.25rem" }}>
                     <input
                       placeholder="Título de tarea"
-                      value={(taskDraft[stage.id] ?? taskTemplate).title}
+                      value={(instTaskDraft[stage.id] ?? taskTemplate).title}
                       onChange={(event) =>
-                        setTaskDraft((prev) => ({ ...prev, [stage.id]: { ...(prev[stage.id] ?? taskTemplate), title: event.target.value } }))
+                        setInstTaskDraft((prev) => ({ ...prev, [stage.id]: { ...(prev[stage.id] ?? taskTemplate), title: event.target.value } }))
                       }
                     />
                     <select
-                      value={(taskDraft[stage.id] ?? taskTemplate).priority}
+                      value={(instTaskDraft[stage.id] ?? taskTemplate).priority}
                       onChange={(event) =>
-                        setTaskDraft((prev) => ({
+                        setInstTaskDraft((prev) => ({
                           ...prev,
                           [stage.id]: { ...(prev[stage.id] ?? taskTemplate), priority: event.target.value as any },
                         }))
@@ -420,17 +424,45 @@ export const FlowsPage = () => {
                     <input
                       type="number"
                       min={1}
-                      value={(taskDraft[stage.id] ?? taskTemplate).dueInDays}
+                      value={(instTaskDraft[stage.id] ?? taskTemplate).dueInDays}
                       onChange={(event) =>
-                        setTaskDraft((prev) => ({
+                        setInstTaskDraft((prev) => ({
                           ...prev,
                           [stage.id]: { ...(prev[stage.id] ?? taskTemplate), dueInDays: Number(event.target.value) },
                         }))
                       }
                       placeholder="Días para vencer"
                     />
+                    <select
+                      value={(instTaskDraft[stage.id] ?? taskTemplate).ownerId ?? ""}
+                      onChange={(event) =>
+                        setInstTaskDraft((prev) => ({
+                          ...prev,
+                          [stage.id]: { ...(prev[stage.id] ?? taskTemplate), ownerId: event.target.value || undefined },
+                        }))
+                      }
+                    >
+                      <option value="">Asignar automáticamente</option>
+                      {users.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {user.fullName}
+                        </option>
+                      ))}
+                    </select>
                     <div style={{ alignSelf: "end" }}>
-                      <button type="button" className="btn btn-outline" onClick={() => addTaskToStage(stage.id)}>
+                      <button
+                        type="button"
+                        className="btn btn-outline"
+                        onClick={() => {
+                          const draft = instTaskDraft[stage.id] ?? taskTemplate;
+                          if (!draft.title) return;
+                          setInstStageTasks((prev) => ({
+                            ...prev,
+                            [stage.id]: [...(prev[stage.id] ?? []), draft],
+                          }));
+                          setInstTaskDraft((prev) => ({ ...prev, [stage.id]: taskTemplate }));
+                        }}
+                      >
                         Agregar tarea
                       </button>
                     </div>

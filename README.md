@@ -5,24 +5,24 @@ SPA en React 19 + TypeScript que consume el backend NestJS/Prisma. Incluye naveg
 ---
 
 ## Índice
-- [Arquitectura y patrones](#arquitectura-y-patrones)
-- [Estructura del proyecto y jerarquía](#estructura-del-proyecto-y-jerarquía)
-- [Variables de entorno](#variables-de-entorno)
-- [Comandos](#comandos)
-- [Manual de integración (Render + Netlify)](#manual-de-integración-render--netlify)
-- [Flujos funcionales destacados](#flujos-funcionales-destacados)
-- [Componentes y páginas clave](#componentes-y-páginas-clave)
-- [Tipos y dominio](#tipos-y-dominio)
-- [UI/UX (sidebar, topbar, modo oscuro)](#uiux-sidebar-topbar-modo-oscuro)
-- [Tablas rápidas de progreso](#tablas-rápidas-de-progreso)
-- [Seed y datos demo](#seed-y-datos-demo)
-- [Buenas prácticas y troubleshooting](#buenas-prácticas-y-troubleshooting)
-- [Manual de usuario (front)](#manual-de-usuario-front)
-- [Manual de mantenimiento (front)](#manual-de-mantenimiento-front)
-- [Extensiones y roadmap sugerido](#extensiones-y-roadmap-sugerido)
-- [Convenciones de estilo y calidad](#convenciones-de-estilo-y-calidad)
-- [FAQ corta](#faq-corta)
-- [Próximos pasos y escalabilidad](#próximos-pasos-y-escalabilidad)
+- Arquitectura y patrones
+- Estructura del proyecto y jerarquía
+- Variables de entorno
+- Comandos
+- Manual de integración (Render + Netlify)
+- Flujos funcionales destacados
+- Componentes y páginas clave
+- Tipos y dominio
+- UI/UX (sidebar, topbar, modo oscuro)
+- Tablas rápidas de progreso
+- Seed y datos demo
+- Buenas prácticas y troubleshooting
+- Manual de usuario (front)
+- Manual de mantenimiento (front)
+- Extensiones y roadmap sugerido
+- Convenciones de estilo y calidad
+- FAQ corta
+- Próximos pasos y escalabilidad
 
 ---
 
@@ -145,8 +145,8 @@ npm run preview      # preview local del build
 
 Definidos en `src/types/domain.ts`:
 - `FlowInstance`: `state` (`no_iniciado`, `en_progreso`, `terminada`), `progress`, `stageStatuses`, `ownerUnit`.
-- `Task`: `progress`, `stageStatusId`, `ownerUnitId`, problemas, historial.
-- `FlowStageStatusEntry`: estado/progreso por etapa y rol dueño.
+|- `Task`: `progress`, `stageStatusId`, `ownerUnitId`, problemas, historial.|
+|- `FlowStageStatusEntry`: estado/progreso por etapa y rol dueño.|
 
 ---
 

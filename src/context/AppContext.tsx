@@ -176,6 +176,7 @@ interface AppContextValue {
   notifications: Notification[];
   metrics: MetricSnapshot[];
   workload: WorkloadSummary[];
+  initError: string | null;
   login: (payload: LoginPayload) => Promise<void>;
   logout: () => void;
   createTask: (payload: CreateTaskPayload) => Promise<Task>;
@@ -230,6 +231,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   });
   const [data, setData] = useState<AppData>(defaultData);
   const [loading, setLoading] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
 
   const authenticatedFetch = useCallback(
     async <T,>(path: string, options: RequestInit = {}) => {
@@ -262,6 +264,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const fetchInitialData = useCallback(async () => {
     if (!token) return;
     setLoading(true);
+    setInitError(null);
     try {
       const [roles, units, users, tasks, flowTemplates, flowInstances, alerts, workload] =
         await Promise.all([
@@ -275,7 +278,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           authenticatedFetch<any[]>('/tasks/workload/summary'),
         ]);
 
-      const normalizedTasks = tasks.map(normalizeTask);
+  const normalizedTasks = tasks.map(normalizeTask);
       const normalizedAlerts = alerts.map(normalizeTask);
       const normalizedInstances = flowInstances.map(normalizeFlowInstance);
       const normalizedWorkload = workload.map(normalizeWorkload);
@@ -299,6 +302,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         metrics: buildMetrics(normalizedTasks),
         workload: normalizedWorkload,
       });
+    } catch (error) {
+      setInitError((error as Error)?.message ?? 'No fue posible cargar los datos iniciales.');
     } finally {
       setLoading(false);
     }
@@ -527,6 +532,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       loading,
       currentUser,
       ...data,
+      initError,
       login,
       logout,
       createTask,
@@ -551,6 +557,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       loading,
       currentUser,
       data,
+      initError,
       login,
       logout,
       createTask,

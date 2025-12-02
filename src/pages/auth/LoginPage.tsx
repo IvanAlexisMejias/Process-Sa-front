@@ -16,7 +16,7 @@ const defaultOptions: PublicOptions = { roles: [], units: [] };
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, loading } = useAppContext();
+  const { login, loading, initError } = useAppContext();
   const [mode, setMode] = useState<AuthMode>("login");
   const [options, setOptions] = useState<PublicOptions>(defaultOptions);
   const [error, setError] = useState<string>("");
@@ -193,6 +193,12 @@ export const LoginPage = () => {
               Regístrate ahora
             </button>
           </div>
+
+          {initError && (
+            <div style={{ color: "var(--danger)", background: "var(--bg-muted)", padding: "0.75rem", borderRadius: "0.75rem" }}>
+              {initError}
+            </div>
+          )}
 
           {isLogin ? (
             <form className="grid" style={{ gap: "1rem" }} onSubmit={handleLogin}>

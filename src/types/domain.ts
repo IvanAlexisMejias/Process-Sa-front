@@ -78,6 +78,7 @@ export interface Task {
   ownerId: string;
   assignerId: string;
   flowInstanceId?: string;
+  flowInstance?: FlowInstance | null;
   priority: 'low' | 'medium' | 'high' | 'critical';
   deadline: string;
   createdAt: string;
@@ -93,6 +94,7 @@ export interface Task {
   subTasks: SubTask[];
   owner?: Pick<User, 'id' | 'fullName'> | null;
   assigner?: Pick<User, 'id' | 'fullName'> | null;
+  ownerUnitId?: string | null;
 }
 
 export interface FlowStage {

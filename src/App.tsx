@@ -7,10 +7,18 @@ import { appRoutes } from '@/routes/appRoutes';
 import type { RoleKey } from '@/types/domain';
 
 const RoleGuard = ({ roles, children }: { roles: RoleKey[]; children: ReactNode }) => {
-  const { currentUser, roles: roleDefinitions } = useAppContext();
+  const { currentUser, roles: roleDefinitions, loading, initError } = useAppContext();
   const userRole = roleDefinitions.find((role) => role.id === currentUser?.roleId);
 
-  if (!currentUser || !userRole) return <Navigate to="/" replace />;
+  if (initError) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (!currentUser) return <Navigate to="/" replace />;
+  if (loading || roleDefinitions.length === 0) {
+    return <div style={{ padding: '2rem' }}>Cargando permisos...</div>;
+  }
+  if (!userRole) return <Navigate to="/" replace />;
 
   if (!roles.includes(userRole.key)) {
     return <Navigate to="/app/overview" replace />;
@@ -20,7 +28,10 @@ const RoleGuard = ({ roles, children }: { roles: RoleKey[]; children: ReactNode 
 };
 
 const ProtectedApp = () => {
-  const { currentUser } = useAppContext();
+  const { currentUser, loading } = useAppContext();
+  if (loading && !currentUser) {
+    return <div style={{ padding: '2rem' }}>Cargando sesión...</div>;
+  }
   if (!currentUser) return <Navigate to="/" replace />;
   return <AppLayout />;
 };

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { trafficLight } from '@/utils/dates';
 import { UseCaseChips } from '@/components/common/UseCaseChips';
+import type { TaskStatus } from '@/types/domain';
 
 export const OverviewPage = () => {
   const { tasks, flowInstances, notifications, units, users } = useAppContext();
@@ -197,15 +198,17 @@ export const OverviewPage = () => {
           <p style={{ color: 'var(--text-muted)' }}>Sin usuarios.</p>
         ) : (
           <div style={{ display: 'grid', gap: '0.75rem' }}>
-            {users
-              .map((u) => ({
-                user: u,
-                completed: tasks.filter((t) => t.ownerId === u.id && t.status === 'completed').length,
-              }))
-              .sort((a, b) => b.completed - a.completed)
-              .slice(0, 5)
-              .map(({ user, completed }, idx) => {
-                const maxCompleted = Math.max(...tasks.map((t) => (t.status === 'completed' ? 1 : 0)), 1);
+            {(() => {
+              const leaderboard = users
+                .map((u) => ({
+                  user: u,
+                  completed: tasks.filter((t) => t.ownerId === u.id && t.status === 'completed').length,
+                }))
+                .sort((a, b) => b.completed - a.completed)
+                .slice(0, 5);
+              const maxCompleted = Math.max(...leaderboard.map((l) => l.completed), 1);
+
+              return leaderboard.map(({ user, completed }, idx) => {
                 const pct = Math.min(100, (completed / maxCompleted) * 100);
                 return (
                   <div key={user.id} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 60px', gap: '0.5rem', alignItems: 'center' }}>
@@ -220,10 +223,45 @@ export const OverviewPage = () => {
                     <span style={{ color: 'var(--success)', justifySelf: 'end' }}>{completed} ✓</span>
                   </div>
                 );
-              })}
+              });
+            })()}
           </div>
         )}
         <UseCaseChips cases={['CU8', 'CU13']} />
+      </section>
+
+      <section className="card">
+        <h2 className="section-title">Distribución por estado</h2>
+        {tasks.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)' }}>No hay tareas aún.</p>
+        ) : (
+          <div style={{ display: 'grid', gap: '0.6rem' }}>
+            {(['completed', 'in_progress', 'blocked', 'pending', 'returned'] as TaskStatus[]).map((status) => {
+              const count = tasks.filter((t) => t.status === status).length;
+              const pct = Math.round((count / tasks.length) * 100);
+              const color =
+                status === 'completed'
+                  ? 'linear-gradient(90deg,#4caf50,#2e7d32)'
+                  : status === 'blocked'
+                    ? 'linear-gradient(90deg,#ff6b6b,#c62828)'
+                    : status === 'in_progress'
+                      ? 'linear-gradient(90deg,#1b63d8,#43c6ac)'
+                      : 'linear-gradient(90deg,#bfc6d4,#9aa3b5)';
+              return (
+                <div key={status} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 50px', alignItems: 'center', gap: '0.5rem' }}>
+                  <strong style={{ textTransform: 'capitalize' }}>{status.replace('_', ' ')}</strong>
+                  <div style={{ width: '100%', height: '12px', borderRadius: 12, background: 'var(--bg-muted)', overflow: 'hidden' }}>
+                    <div style={{ width: `${pct}%`, height: '100%', background: color, transition: 'width 0.3s ease' }} />
+                  </div>
+                  <span style={{ color: 'var(--text-muted)', justifySelf: 'end' }}>
+                    {count} ({pct}%)
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <UseCaseChips cases={['CU13']} />
       </section>
 
       <section className="card">

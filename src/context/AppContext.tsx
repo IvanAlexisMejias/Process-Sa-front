@@ -153,7 +153,7 @@ interface InstantiateFlowPayload {
     tasks: {
       title: string;
       description?: string;
-      priority?: Task['priority'];
+      priority?: Task['priority'] | Uppercase<Task['priority']>;
       dueInDays?: number;
       ownerId?: string;
     }[];

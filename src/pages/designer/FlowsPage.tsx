@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { useAppContext } from "@/context/AppContext";
 import { UseCaseChips } from "@/components/common/UseCaseChips";
-import type { RoleKey } from "@/types/domain";
+import type { RoleKey, Task } from "@/types/domain";
 
 const stageTemplate = {
   name: "",
@@ -112,7 +112,7 @@ export const FlowsPage = () => {
           stageId: stage.id,
           tasks: (stageTasks[stage.id] ?? []).map((task) => ({
             ...task,
-            priority: task.priority.toUpperCase(),
+            priority: task.priority.toUpperCase() as Uppercase<Task["priority"]>,
           })),
         }))
         .filter((entry) => entry.tasks.length > 0) ?? [];

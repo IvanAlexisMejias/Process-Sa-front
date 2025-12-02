@@ -149,22 +149,40 @@ export const OverviewPage = () => {
         {units.length === 0 ? (
           <p style={{ color: 'var(--text-muted)' }}>Sin unidades.</p>
         ) : (
-          <div style={{ display: 'grid', gap: '0.5rem' }}>
+          <div style={{ display: 'grid', gap: '1rem' }}>
             {units.map((unit) => {
               const unitTasks = tasks.filter((t) => t.ownerUnitId === unit.id || t.flowInstance?.ownerUnitId === unit.id);
               const completed = unitTasks.filter((t) => t.status === 'completed').length;
               const total = unitTasks.length || 1;
               const pct = Math.round((completed / total) * 100);
+              const pctLabel = `${pct}%`;
               return (
-                <div key={unit.id} style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '0.5rem' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div
+                  key={unit.id}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '160px 1fr 60px',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                  }}
+                >
+                  <div>
                     <strong>{unit.name}</strong>
-                    <small style={{ color: 'var(--text-muted)' }}>{completed}/{total} completadas</small>
+                    <small style={{ color: 'var(--text-muted)', display: 'block' }}>
+                      {completed}/{total} completadas
+                    </small>
                   </div>
-                  <div style={{ width: '100%', maxWidth: '260px', background: 'var(--bg-muted)', borderRadius: 999, overflow: 'hidden', height: '10px' }}>
-                    <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #43c6ac, #1b63d8)' }} />
+                  <div style={{ width: '100%', background: 'var(--bg-muted)', borderRadius: 12, overflow: 'hidden', height: '12px' }}>
+                    <div
+                      style={{
+                        width: `${pct}%`,
+                        height: '100%',
+                        background: 'linear-gradient(90deg, #43c6ac, #1b63d8)',
+                        transition: 'width 0.3s ease',
+                      }}
+                    />
                   </div>
-                  <span style={{ justifySelf: 'end', color: 'var(--text-muted)' }}>{pct}%</span>
+                  <span style={{ justifySelf: 'end', color: 'var(--text-muted)' }}>{pctLabel}</span>
                 </div>
               );
             })}

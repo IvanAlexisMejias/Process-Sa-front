@@ -50,30 +50,54 @@ const normalizeTask = (task: any): Task => ({
   })),
   owner: task.owner ?? null,
   assigner: task.assigner ?? null,
+  stageStatusId: task.stageStatusId ?? null,
   ownerUnitId: task.ownerUnitId ?? task.owner?.unit?.id ?? task.flowInstance?.ownerUnit?.id ?? task.flowInstance?.ownerUnitId ?? null,
 });
 
-const normalizeFlowInstance = (instance: any): FlowInstance => ({
-  id: instance.id,
-  templateId: instance.templateId,
-  name: instance.name,
-  kickoffDate: instance.kickoffDate,
-  dueDate: instance.dueDate,
-  progress: instance.progress ?? 0,
-  health: lower<FlowInstance['health']>(instance.health, 'on_track'),
-  template: instance.template ?? undefined,
-  ownerUnitId: instance.ownerUnitId,
-  ownerUnit: instance.ownerUnit ?? undefined,
-  stageStatuses:
+const deriveInstanceState = (stageStatuses: FlowInstance['stageStatuses'], progress: number): FlowInstance['state'] => {
+  if (!stageStatuses.length) {
+    if (progress >= 100) return 'terminada';
+    if (progress === 0) return 'no_iniciado';
+    return 'en_progreso';
+  }
+  const allCompleted = stageStatuses.every(
+    (stage) => stage.progress === 100 || stage.status === 'completed',
+  );
+  const anyActive = stageStatuses.some((stage) =>
+    ['in_progress', 'blocked', 'returned'].includes(stage.status),
+  );
+  const anyProgress = stageStatuses.some((stage) => stage.progress > 0);
+  if (allCompleted) return 'terminada';
+  if (!anyActive && !anyProgress) return 'no_iniciado';
+  return 'en_progreso';
+};
+
+const normalizeFlowInstance = (instance: any): FlowInstance => {
+  const stageStatuses =
     instance.stageStatuses?.map((stage: any) => ({
       id: stage.id,
       status: lower<TaskStatus>(stage.status, 'pending' as TaskStatus),
       progress: stage.progress ?? 0,
       owner: stage.owner ?? null,
       stage: stage.stage,
-    })) ?? [],
-  stageStatus: instance.stageStatus,
-});
+    })) ?? [];
+  const progress = instance.progress ?? 0;
+  return {
+    id: instance.id,
+    templateId: instance.templateId,
+    name: instance.name,
+    kickoffDate: instance.kickoffDate,
+    dueDate: instance.dueDate,
+    progress,
+    health: lower<FlowInstance['health']>(instance.health, 'on_track'),
+    state: (instance.state as FlowInstance['state']) ?? deriveInstanceState(stageStatuses, progress),
+    template: instance.template ?? undefined,
+    ownerUnitId: instance.ownerUnitId,
+    ownerUnit: instance.ownerUnit ?? undefined,
+    stageStatuses,
+    stageStatus: instance.stageStatus,
+  };
+};
 
 const normalizeWorkload = (entry: any): WorkloadSummary => {
   const userId = entry.userId ?? entry.ownerId ?? 'unknown';
@@ -169,6 +193,7 @@ interface AppContextValue {
   token: string | null;
   loading: boolean;
   currentUser: User | null;
+  retryInit: () => Promise<void>;
   roles: RoleDefinition[];
   units: Unit[];
   users: User[];
@@ -340,6 +365,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const refreshAfterAction = useCallback(async () => {
+    await fetchInitialData();
+  }, [fetchInitialData]);
+
+  const retryInit = useCallback(async () => {
     await fetchInitialData();
   }, [fetchInitialData]);
 
@@ -533,6 +562,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       token,
       loading,
       currentUser,
+      retryInit,
       ...data,
       initError,
       login,
@@ -578,6 +608,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       instantiateFlow,
       deleteFlowTemplate,
       deleteFlowInstance,
+      retryInit,
     ],
   );
 

@@ -81,6 +81,7 @@ export interface Task {
   assignerId: string;
   flowInstanceId?: string;
   flowInstance?: FlowInstance | null;
+  stageStatusId?: string | null;
   priority: 'low' | 'medium' | 'high' | 'critical';
   deadline: string;
   createdAt: string;
@@ -145,6 +146,7 @@ export interface FlowInstance {
   kickoffDate: string;
   dueDate: string;
   stageStatuses: FlowStageStatusEntry[];
+  state: 'no_iniciado' | 'en_progreso' | 'terminada';
   /**
    * Legacy field kept for mock data compatibility. Prefer `stageStatuses`.
    */

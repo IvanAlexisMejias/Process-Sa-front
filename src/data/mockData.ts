@@ -237,6 +237,7 @@ export const mockFlowInstances: FlowInstance[] = [
     dueDate: daysFromNow(2),
     ownerUnitId: 'unit-fin',
     health: 'at_risk',
+    state: 'en_progreso',
     progress: 68,
     stageStatus: {
       'stg-preparacion': { status: 'completed', ownerId: 'usr-analyst', progress: 100 },
@@ -253,6 +254,7 @@ export const mockFlowInstances: FlowInstance[] = [
     dueDate: daysFromNow(7),
     ownerUnitId: 'unit-ops',
     health: 'on_track',
+    state: 'en_progreso',
     progress: 54,
     stageStatus: {
       'stg-descubrimiento': { status: 'completed', ownerId: 'usr-designer', progress: 100 },

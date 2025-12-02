@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { useAppContext } from "@/context/AppContext";
 import { UseCaseChips } from "@/components/common/UseCaseChips";
-import type { RoleKey, Task, FlowTemplate } from "@/types/domain";
+import type { RoleKey, Task, FlowTemplate, FlowInstance } from "@/types/domain";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import { useToast } from "@/context/ToastContext";
 
@@ -204,6 +204,12 @@ export const FlowsPage = () => {
     () => flowInstances.filter((inst) => inst.name.toLowerCase().includes(instanceSearch.toLowerCase())),
     [flowInstances, instanceSearch],
   );
+
+  const formatState = (state: FlowInstance["state"]) => {
+    if (state === "no_iniciado") return "No iniciado";
+    if (state === "terminada") return "Terminada";
+    return "En progreso";
+  };
 
   return (
     <div className="grid" style={{ gap: "1.25rem" }}>
@@ -625,7 +631,8 @@ export const FlowsPage = () => {
               <th>Nombre</th>
               <th>Unidad</th>
               <th>Avance</th>
-              <th>Salud</th>
+              <th>Etapas</th>
+              <th>Estado</th>
               <th></th>
             </tr>
           </thead>
@@ -634,8 +641,62 @@ export const FlowsPage = () => {
               <tr key={instance.id}>
                 <td>{instance.name}</td>
                 <td>{units.find((unit) => unit.id === instance.ownerUnitId)?.name}</td>
-                <td>{instance.progress}%</td>
-                <td>{instance.health}</td>
+                <td>
+                  <div style={{ minWidth: "120px" }}>
+                    <div
+                      style={{
+                        width: "100%",
+                        background: "var(--bg-muted)",
+                        borderRadius: 12,
+                        overflow: "hidden",
+                        height: 10,
+                        marginBottom: 4,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${instance.progress}%`,
+                          height: "100%",
+                          background: "linear-gradient(90deg,#1b63d8,#43c6ac)",
+                        }}
+                      />
+                    </div>
+                    <small style={{ color: "var(--text-muted)" }}>{instance.progress}%</small>
+                  </div>
+                </td>
+                <td>
+                  <div style={{ display: "grid", gap: "0.35rem", minWidth: "180px" }}>
+                    {instance.stageStatuses.map((stage) => (
+                      <div key={stage.id}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem" }}>
+                          <span>{stage.stage.name}</span>
+                          <span>{stage.progress}%</span>
+                        </div>
+                        <div
+                          style={{
+                            width: "100%",
+                            background: "var(--bg-muted)",
+                            borderRadius: 10,
+                            overflow: "hidden",
+                            height: 8,
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: `${stage.progress}%`,
+                              height: "100%",
+                              background:
+                                stage.progress === 100
+                                  ? "linear-gradient(90deg,#43c6ac,#1b63d8)"
+                                  : "linear-gradient(90deg,#f6c343,#f38b2f)",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </td>
+                <td>{formatState(instance.state)}</td>
                 <td style={{ textAlign: "right" }}>
                   <button
                     type="button"

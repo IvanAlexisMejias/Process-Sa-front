@@ -71,7 +71,7 @@ export const OverviewPage = () => {
               >
                 <strong>{instance.name}</strong>
                 <p style={{ margin: '0.35rem 0', color: 'var(--text-muted)' }}>
-                  Avance {instance.progress}% · Salud {instance.health}
+                  Avance {instance.progress}% · Estado {instance.state.replace('_', ' ')}
                 </p>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                   {stageEntries.map((stage) => (

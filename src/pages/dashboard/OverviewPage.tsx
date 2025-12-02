@@ -16,6 +16,28 @@ export const OverviewPage = () => {
     return { completed, delayed, atRisk };
   }, [tasks]);
 
+  const stageTasksByStageId = useMemo(() => {
+    return tasks.reduce<Record<string, typeof tasks>>((acc, task) => {
+      if (!task.stageStatusId) return acc;
+      if (!acc[task.stageStatusId]) acc[task.stageStatusId] = [];
+      acc[task.stageStatusId].push(task);
+      return acc;
+    }, {});
+  }, [tasks]);
+
+  const unitFlowRanking = useMemo(() => {
+    return units
+      .map((unit) => {
+        const owned = flowInstances.filter((flow) => flow.ownerUnitId === unit.id);
+        const completed = owned.filter((flow) => flow.state === 'terminada').length;
+        const avgProgress = owned.length
+          ? Math.round(owned.reduce((acc, flow) => acc + (flow.progress ?? 0), 0) / owned.length)
+          : 0;
+        return { unit, completed, avgProgress, total: owned.length };
+      })
+      .sort((a, b) => b.completed - a.completed || b.avgProgress - a.avgProgress);
+  }, [flowInstances, units]);
+
   return (
     <div className="grid" style={{ paddingBottom: '2rem', gap: '1.25rem' }}>
       <section className="card">
@@ -39,52 +61,120 @@ export const OverviewPage = () => {
 
       <section className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 className="section-title">Flujos activos (Diseñador / Administrador)</h2>
+          <h2 className="section-title">Flujos activos (Disenador / Administrador)</h2>
           <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
             {flowInstances.length} ejecuciones
           </span>
         </div>
         <div className="grid two">
-          {flowInstances.map((instance) => {
-            const stageEntries =
-              instance.stageStatuses?.length && instance.stageStatuses.length > 0
-                ? instance.stageStatuses.map((stage) => ({
-                    id: stage.id,
-                    status: stage.status,
-                    progress: stage.progress,
-                  }))
-                : instance.stageStatus
-                  ? Object.entries(instance.stageStatus).map(([id, stage]) => ({
-                      id,
-                      status: stage.status,
-                      progress: stage.progress,
-                    }))
-                  : [];
-            return (
-              <article
-                key={instance.id}
-                style={{
-                  border: '1px solid var(--border-soft)',
-                  borderRadius: 'var(--radius)',
-                  padding: '1rem',
-                }}
-              >
-                <strong>{instance.name}</strong>
-                <p style={{ margin: '0.35rem 0', color: 'var(--text-muted)' }}>
-                  Avance {instance.progress}% · Estado {instance.state.replace('_', ' ')}
-                </p>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  {stageEntries.map((stage) => (
-                    <span key={stage.id} className={`status-pill ${stage.status}`}>
-                      {stage.status} {stage.progress}%
-                    </span>
-                  ))}
-                </div>
-              </article>
-            );
-          })}
+          {flowInstances.map((instance) => (
+            <article
+              key={instance.id}
+              style={{
+                border: '1px solid var(--border-soft)',
+                borderRadius: 'var(--radius)',
+                padding: '1rem',
+              }}
+            >
+              <strong>{instance.name}</strong>
+              <p style={{ margin: '0.35rem 0', color: 'var(--text-muted)' }}>
+                Avance {instance.progress}% · Estado {instance.state.replace('_', ' ')}
+              </p>
+              <div style={{ width: '100%', background: 'var(--bg-muted)', borderRadius: 12, overflow: 'hidden', height: 10, marginBottom: 8 }}>
+                <div
+                  style={{
+                    width: `${instance.progress}%`,
+                    height: '100%',
+                    background: 'linear-gradient(90deg,#1b63d8,#43c6ac)',
+                  }}
+                />
+              </div>
+              <div style={{ display: 'grid', gap: '0.65rem' }}>
+                {instance.stageStatuses.map((stage) => {
+                  const tasksOfStage = stageTasksByStageId[stage.id] ?? [];
+                  return (
+                    <div key={stage.id} style={{ display: 'grid', gap: '0.35rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                        <span>{stage.stage.name}</span>
+                        <span style={{ color: stage.progress === 100 ? 'var(--success)' : 'var(--text-muted)' }}>
+                          {stage.progress}%
+                        </span>
+                      </div>
+                      <div style={{ width: '100%', background: 'var(--bg-muted)', borderRadius: 10, overflow: 'hidden', height: 8 }}>
+                        <div
+                          style={{
+                            width: `${stage.progress}%`,
+                            height: '100%',
+                            background:
+                              stage.progress === 100
+                                ? 'linear-gradient(90deg,#43c6ac,#1b63d8)'
+                                : 'linear-gradient(90deg,#f6c343,#f38b2f)',
+                          }}
+                        />
+                      </div>
+                      {tasksOfStage.length > 0 && (
+                        <div style={{ display: 'grid', gap: '0.25rem', paddingLeft: '0.35rem' }}>
+                          {tasksOfStage.slice(0, 3).map((task) => (
+                            <div key={task.id}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                                <span>{task.title}</span>
+                                <span>{task.progress}%</span>
+                              </div>
+                              <div style={{ width: '100%', background: 'var(--bg-muted)', borderRadius: 8, overflow: 'hidden', height: 6 }}>
+                                <div
+                                  style={{
+                                    width: `${task.progress}%`,
+                                    height: '100%',
+                                    background: 'linear-gradient(90deg,#1b63d8,#43c6ac)',
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                          {tasksOfStage.length > 3 && (
+                            <small style={{ color: 'var(--text-muted)' }}>+{tasksOfStage.length - 3} tareas</small>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          ))}
         </div>
         <UseCaseChips cases={['CU5', 'CU19']} />
+      </section>
+
+      <section className="card">
+        <h2 className="section-title">Ejecución por unidad (flujos)</h2>
+        {unitFlowRanking.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)' }}>Sin datos aún.</p>
+        ) : (
+          <div style={{ display: 'grid', gap: '0.75rem' }}>
+            {unitFlowRanking.map(({ unit, completed, avgProgress, total }) => (
+              <div key={unit.id} style={{ display: 'grid', gridTemplateColumns: '200px 1fr 80px', gap: '0.75rem', alignItems: 'center' }}>
+                <div>
+                  <strong>{unit.name}</strong>
+                  <small style={{ color: 'var(--text-muted)', display: 'block' }}>
+                    {completed} completados / {total || 0} en curso
+                  </small>
+                </div>
+                <div style={{ width: '100%', background: 'var(--bg-muted)', borderRadius: 12, overflow: 'hidden', height: 12 }}>
+                  <div
+                    style={{
+                      width: `${avgProgress}%`,
+                      height: '100%',
+                      background: 'linear-gradient(90deg,#4caf50,#1b63d8)',
+                    }}
+                  />
+                </div>
+                <span style={{ justifySelf: 'end', color: 'var(--text-muted)' }}>{avgProgress}%</span>
+              </div>
+            ))}
+          </div>
+        )}
+        <UseCaseChips cases={['CU17']} />
       </section>
 
       <section className="card">

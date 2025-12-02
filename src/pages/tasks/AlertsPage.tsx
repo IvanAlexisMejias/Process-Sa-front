@@ -17,10 +17,8 @@ export const AlertsPage = () => {
     [tasks],
   );
 
-  const tasksWithProblems = useMemo(
-    () => tasks.filter((task) => task.problems.length > 0),
-    [tasks],
-  );
+  const tasksWithProblems = useMemo(() => tasks.filter((task) => task.problems.length > 0), [tasks]);
+  const resolvedProblems = useMemo(() => tasks.flatMap((t) => t.problems.filter((p) => p.status === 'resolved')), [tasks]);
 
   return (
     <div className="grid" style={{ gap: '1.25rem' }}>
@@ -133,6 +131,34 @@ export const AlertsPage = () => {
             ))}
           </div>
         )}
+      </section>
+
+      <section className="card">
+        <h2 className="section-title">Reportes resueltos</h2>
+        {resolvedProblems.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)' }}>Aún no hay reportes resueltos.</p>
+        ) : (
+          <div className="grid two">
+            {resolvedProblems.map((problem) => {
+              const task = tasks.find((t) => t.id === problem.taskId);
+              const resolver = task?.history.find((h) => h.action?.startsWith('Problema resuelto'));
+              return (
+                <article key={problem.id} style={{ border: '1px solid var(--border-soft)', borderRadius: 'var(--radius)', padding: '1rem' }}>
+                  <strong>{task?.title ?? 'Tarea'}</strong>
+                  <p style={{ margin: '0.25rem 0', color: 'var(--text-muted)' }}>{problem.description}</p>
+                  <p style={{ margin: '0.25rem 0' }}>
+                    <small style={{ color: 'var(--text-muted)' }}>
+                      Resuelto: {problem.resolvedAt ? new Date(problem.resolvedAt).toLocaleString() : '—'}
+                      {resolver?.performedByName ? ` · Por: ${resolver.performedByName}` : ''}
+                    </small>
+                  </p>
+                  {problem.resolution && <p style={{ margin: '0.25rem 0' }}>Solución: {problem.resolution}</p>}
+                </article>
+              );
+            })}
+          </div>
+        )}
+        <UseCaseChips cases={['CU13']} />
       </section>
     </div>
   );

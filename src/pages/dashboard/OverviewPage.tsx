@@ -196,7 +196,7 @@ export const OverviewPage = () => {
         {users.length === 0 ? (
           <p style={{ color: 'var(--text-muted)' }}>Sin usuarios.</p>
         ) : (
-          <div style={{ display: 'grid', gap: '0.65rem' }}>
+          <div style={{ display: 'grid', gap: '0.75rem' }}>
             {users
               .map((u) => ({
                 user: u,
@@ -204,16 +204,23 @@ export const OverviewPage = () => {
               }))
               .sort((a, b) => b.completed - a.completed)
               .slice(0, 5)
-              .map(({ user, completed }, idx) => (
-                <div key={user.id} style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: '0.5rem', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>#{idx + 1}</span>
-                  <div>
-                    <strong>{user.fullName}</strong>
-                    <small style={{ display: 'block', color: 'var(--text-muted)' }}>{user.email}</small>
+              .map(({ user, completed }, idx) => {
+                const maxCompleted = Math.max(...tasks.map((t) => (t.status === 'completed' ? 1 : 0)), 1);
+                const pct = Math.min(100, (completed / maxCompleted) * 100);
+                return (
+                  <div key={user.id} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 60px', gap: '0.5rem', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>#{idx + 1}</span>
+                    <div>
+                      <strong>{user.fullName}</strong>
+                      <div style={{ width: '100%', background: 'var(--bg-muted)', borderRadius: 999, overflow: 'hidden', height: '10px', marginTop: '0.3rem' }}>
+                        <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #4caf50, #2e7d32)' }} />
+                      </div>
+                      <small style={{ display: 'block', color: 'var(--text-muted)' }}>{user.email}</small>
+                    </div>
+                    <span style={{ color: 'var(--success)', justifySelf: 'end' }}>{completed} ✓</span>
                   </div>
-                  <span style={{ color: 'var(--success)' }}>{completed} ✓</span>
-                </div>
-              ))}
+                );
+              })}
           </div>
         )}
         <UseCaseChips cases={['CU8', 'CU13']} />

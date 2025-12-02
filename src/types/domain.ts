@@ -57,6 +57,7 @@ export interface TaskProblem {
   reporterId: string;
   createdAt: string;
   resolvedAt?: string | null;
+  resolution?: string | null;
   description: string;
   status: 'open' | 'resolved';
 }
@@ -66,6 +67,7 @@ export interface TaskHistoryEntry {
   taskId: string;
   action: string;
   performedBy?: string | null;
+  performedByName?: string | null;
   timestamp: string;
   notes?: string;
 }

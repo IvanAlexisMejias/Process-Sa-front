@@ -2,9 +2,11 @@ import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { UseCaseChips } from '@/components/common/UseCaseChips';
+import { useToast } from '@/context/ToastContext';
 
 export const UnitsPage = () => {
   const { units, users, createUnit, updateUnit } = useAppContext();
+  const { showToast } = useToast();
   const [form, setForm] = useState({
     name: '',
     parentId: '',
@@ -31,6 +33,7 @@ export const UnitsPage = () => {
       parentId: form.parentId || null,
       leadId: form.leadId || null,
     });
+    showToast('Unidad creada', 'success');
     setForm({ name: '', parentId: '', leadId: '' });
   };
 
@@ -42,6 +45,7 @@ export const UnitsPage = () => {
       leadId: editSelection.leadId || null,
       parentId: editSelection.parentId || null,
     });
+    showToast('Unidad actualizada', 'success');
   };
 
   return (

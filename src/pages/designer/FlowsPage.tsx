@@ -3,6 +3,8 @@ import type { FormEvent } from "react";
 import { useAppContext } from "@/context/AppContext";
 import { UseCaseChips } from "@/components/common/UseCaseChips";
 import type { RoleKey, Task } from "@/types/domain";
+import { ConfirmModal } from "@/components/common/ConfirmModal";
+import { useToast } from "@/context/ToastContext";
 
 const stageTemplate = {
   name: "",
@@ -26,6 +28,7 @@ export const FlowsPage = () => {
     deleteFlowTemplate,
     deleteFlowInstance,
   } = useAppContext();
+  const { showToast } = useToast();
   const [stageDraft, setStageDraft] = useState(stageTemplate);
   const [form, setForm] = useState({
     name: "",
@@ -100,6 +103,7 @@ export const FlowsPage = () => {
     setStages([]);
     setStageTasks({});
     setTaskDraft({});
+    showToast("Plantilla creada", "success");
   };
 
   const handleInstanceSubmit = (event: FormEvent) => {
@@ -123,27 +127,49 @@ export const FlowsPage = () => {
       dueDate: new Date(instanceForm.dueDate).toISOString(),
       stageTasks: payloadStageTasks,
     });
+    showToast("Instancia creada", "success");
   };
 
-  const handleDeleteTemplate = (id: string) => {
-    if (confirm("¿Eliminar esta plantilla? No debe tener instancias activas.")) {
-      deleteFlowTemplate(id);
-    }
-  };
+  const [confirm, setConfirm] = useState<{ open: boolean; onConfirm: () => void; message: string }>({
+    open: false,
+    onConfirm: () => {},
+    message: "",
+  });
 
-  const handleDeleteInstance = (id: string) => {
-    if (confirm("¿Eliminar esta instancia? Se borrarán sus tareas asociadas.")) {
-      deleteFlowInstance(id);
-    }
-  };
+  const askConfirm = (message: string, onConfirm: () => void) => setConfirm({ open: true, message, onConfirm });
 
   const stagesOfSelectedTemplate = useMemo(
     () => flowTemplates.find((template) => template.id === instanceForm.templateId)?.stages ?? [],
     [flowTemplates, instanceForm.templateId],
   );
 
+  const [templateSearch, setTemplateSearch] = useState("");
+  const [instanceSearch, setInstanceSearch] = useState("");
+  const filteredTemplates = useMemo(
+    () =>
+      flowTemplates.filter(
+        (tpl) =>
+          tpl.name.toLowerCase().includes(templateSearch.toLowerCase()) ||
+          tpl.description.toLowerCase().includes(templateSearch.toLowerCase()),
+      ),
+    [flowTemplates, templateSearch],
+  );
+  const filteredInstances = useMemo(
+    () => flowInstances.filter((inst) => inst.name.toLowerCase().includes(instanceSearch.toLowerCase())),
+    [flowInstances, instanceSearch],
+  );
+
   return (
     <div className="grid" style={{ gap: "1.25rem" }}>
+      <ConfirmModal
+        open={confirm.open}
+        message={confirm.message}
+        onCancel={() => setConfirm((prev) => ({ ...prev, open: false }))}
+        onConfirm={() => {
+          confirm.onConfirm();
+          setConfirm((prev) => ({ ...prev, open: false }));
+        }}
+      />
       <section className="card">
         <h2 className="section-title">Diseñar flujo tipo</h2>
         <form onSubmit={handleTemplateSubmit} className="grid" style={{ gap: "1rem" }}>
@@ -424,8 +450,16 @@ export const FlowsPage = () => {
 
       <section className="card">
         <h2 className="section-title">Biblioteca de flujos</h2>
+        <div style={{ marginBottom: "0.75rem" }}>
+          <input
+            placeholder="Buscar plantillas..."
+            value={templateSearch}
+            onChange={(e) => setTemplateSearch(e.target.value)}
+            style={{ maxWidth: "320px" }}
+          />
+        </div>
         <div className="grid two">
-          {flowTemplates.map((template) => (
+          {filteredTemplates.map((template) => (
             <article key={template.id} style={{ border: "1px solid var(--border-soft)", borderRadius: "var(--radius)", padding: "1rem" }}>
               <strong>{template.name}</strong>
               <p style={{ color: "var(--text-muted)" }}>{template.description}</p>
@@ -437,7 +471,16 @@ export const FlowsPage = () => {
                 ))}
               </div>
               <div style={{ marginTop: "0.75rem", display: "flex", gap: "0.5rem" }}>
-                <button type="button" className="btn btn-outline" onClick={() => handleDeleteTemplate(template.id)}>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() =>
+                    askConfirm("¿Eliminar esta plantilla? No debe tener instancias activas.", () => {
+                      deleteFlowTemplate(template.id);
+                      showToast("Plantilla eliminada", "info");
+                    })
+                  }
+                >
                   Eliminar
                 </button>
               </div>
@@ -448,6 +491,14 @@ export const FlowsPage = () => {
 
       <section className="card">
         <h2 className="section-title">Ejecuciones recientes</h2>
+        <div style={{ marginBottom: "0.75rem" }}>
+          <input
+            placeholder="Buscar ejecuciones..."
+            value={instanceSearch}
+            onChange={(e) => setInstanceSearch(e.target.value)}
+            style={{ maxWidth: "320px" }}
+          />
+        </div>
         <table className="table">
           <thead>
             <tr>
@@ -459,14 +510,23 @@ export const FlowsPage = () => {
             </tr>
           </thead>
           <tbody>
-            {flowInstances.map((instance) => (
+            {filteredInstances.map((instance) => (
               <tr key={instance.id}>
                 <td>{instance.name}</td>
                 <td>{units.find((unit) => unit.id === instance.ownerUnitId)?.name}</td>
                 <td>{instance.progress}%</td>
                 <td>{instance.health}</td>
                 <td style={{ textAlign: "right" }}>
-                  <button type="button" className="btn btn-outline" onClick={() => handleDeleteInstance(instance.id)}>
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    onClick={() =>
+                      askConfirm("¿Eliminar esta instancia? Se borrarán sus tareas asociadas.", () => {
+                        deleteFlowInstance(instance.id);
+                        showToast("Instancia eliminada", "info");
+                      })
+                    }
+                  >
                     Eliminar
                   </button>
                 </td>

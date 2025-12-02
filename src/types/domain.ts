@@ -31,6 +31,9 @@ export interface User {
   roleId: string;
   unitId: string | null;
   avatarColor?: string | null;
+  title?: string | null;
+  phone?: string | null;
+  about?: string | null;
   workload: number;
   lastLogin?: string | null;
   role?: UserRoleSummary;

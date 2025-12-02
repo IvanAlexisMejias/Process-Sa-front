@@ -125,6 +125,9 @@ interface UpdateProfilePayload {
   password?: string;
   unitId?: string | null;
   avatarColor?: string;
+  title?: string;
+  phone?: string;
+  about?: string;
 }
 
 interface CreateUnitPayload {

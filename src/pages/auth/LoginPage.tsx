@@ -164,7 +164,7 @@ export const LoginPage = () => {
           />
         </div>
 
-        <div style={{ padding: "2.75rem", display: "flex", flexDirection: "column", gap: "1.5rem", background: "#fff" }}>
+        <div style={{ padding: "2.75rem", display: "flex", flexDirection: "column", gap: "1.5rem", background: "var(--bg-card)" }}>
           <div style={{ display: "flex", gap: "0.75rem" }}>
             <button
               type="button"

@@ -2,9 +2,11 @@
 import { useAppContext } from "@/context/AppContext";
 import { RoleBadge } from "@/components/common/RoleBadge";
 import { UserAvatar } from "@/components/common/UserAvatar";
+import { useTheme } from "@/context/ThemeContext";
 
 export const TopBar = () => {
   const { currentUser, roles, logout } = useAppContext();
+  const { theme, toggleTheme } = useTheme();
   const role = roles.find((item) => item.id === currentUser?.roleId);
 
   if (!currentUser || !role) return null;
@@ -17,7 +19,7 @@ export const TopBar = () => {
         alignItems: "center",
         padding: "1.5rem 2rem",
         borderBottom: "1px solid var(--border-soft)",
-        background: "#fff",
+        background: "var(--bg-card)",
         position: "sticky",
         top: 0,
         zIndex: 2,
@@ -35,6 +37,9 @@ export const TopBar = () => {
         <Link className="btn btn-outline" to="/app/profile">
           Mi perfil
         </Link>
+        <button className="btn btn-outline" type="button" onClick={toggleTheme}>
+          {theme === "light" ? "🌙 Modo oscuro" : "☀️ Modo claro"}
+        </button>
         <button className="btn btn-primary" type="button" onClick={logout}>
           Cerrar sesión
         </button>

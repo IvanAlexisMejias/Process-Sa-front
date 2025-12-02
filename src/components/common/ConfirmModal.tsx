@@ -34,7 +34,7 @@ export const ConfirmModal = ({
     >
       <div
         style={{
-          background: "#fff",
+          background: "var(--bg-card)",
           borderRadius: "14px",
           padding: "1.25rem 1.5rem",
           maxWidth: "420px",

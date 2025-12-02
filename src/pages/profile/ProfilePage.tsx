@@ -9,6 +9,9 @@ const emptyProfile = {
   unitId: "",
   password: "",
   avatarColor: "#2684ff",
+  title: "",
+  phone: "",
+  about: "",
 };
 
 type Feedback = { type: "success" | "error"; message: string } | null;
@@ -35,6 +38,9 @@ export const ProfilePage = () => {
         unitId: currentUser.unitId ?? "",
         password: "",
         avatarColor: currentUser.avatarColor ?? "#2684ff",
+        title: currentUser.title ?? "",
+        phone: currentUser.phone ?? "",
+        about: currentUser.about ?? "",
       });
     }
   }, [currentUser]);
@@ -67,6 +73,9 @@ export const ProfilePage = () => {
         unitId: profileForm.unitId || null,
         password: profileForm.password || undefined,
         avatarColor: profileForm.avatarColor,
+        title: profileForm.title || undefined,
+        phone: profileForm.phone || undefined,
+        about: profileForm.about || undefined,
       });
       setProfileForm((prev) => ({ ...prev, password: "" }));
       setProfileFeedback({ type: "success", message: "Actualizamos tu perfil correctamente." });
@@ -151,6 +160,28 @@ export const ProfilePage = () => {
               onChange={(event) => setProfileForm((prev) => ({ ...prev, avatarColor: event.target.value }))}
             />
             <span className="field-hint">Se usará en toda la app.</span>
+          </label>
+          <label className="field">
+            <span className="field-label">Cargo / Rol</span>
+            <input value={profileForm.title} onChange={(event) => setProfileForm((prev) => ({ ...prev, title: event.target.value }))} />
+            <span className="field-hint">Opcional, visible en reportes.</span>
+          </label>
+          <label className="field">
+            <span className="field-label">Contacto</span>
+            <input
+              value={profileForm.phone}
+              onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))}
+              placeholder="Teléfono o enlace de contacto"
+            />
+          </label>
+          <label className="field" style={{ gridColumn: "1/-1" }}>
+            <span className="field-label">Sobre mí</span>
+            <textarea
+              value={profileForm.about}
+              onChange={(event) => setProfileForm((prev) => ({ ...prev, about: event.target.value }))}
+              style={{ minHeight: "120px" }}
+              placeholder="Comparte tu enfoque o proyectos actuales."
+            />
           </label>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem" }}>
             <UserAvatar name={profileForm.fullName} color={profileForm.avatarColor} size={60} />

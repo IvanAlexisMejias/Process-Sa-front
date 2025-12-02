@@ -23,6 +23,24 @@
   --sidebar-bg: linear-gradient(160deg, #0c1e42, #0f3f8c);
 }
 
+[data-theme='dark'] {
+  color-scheme: dark;
+  color: #f4f7ff;
+  --brand: #6ea8ff;
+  --brand-accent: #99b9ff;
+  --brand-soft: rgba(110, 168, 255, 0.2);
+  --text-strong: #f4f7ff;
+  --text-muted: #b5bed1;
+  --bg-card: #142138;
+  --bg-muted: #0f1728;
+  --border-soft: #1f2940;
+  --success: #4fe6a1;
+  --warning: #f5c16f;
+  --danger: #ff726f;
+  --sidebar-bg: linear-gradient(160deg, #080c14, #111c31);
+  --shadow-card: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -33,6 +51,12 @@ body {
   background: radial-gradient(circle at 10% 10%, rgba(15, 63, 216, 0.12), transparent 24%),
     radial-gradient(circle at 80% 0%, rgba(12, 30, 66, 0.12), transparent 28%),
     #f1f4f8;
+}
+
+[data-theme='dark'] body {
+  background: radial-gradient(circle at 10% 10%, rgba(110, 168, 255, 0.08), transparent 32%),
+    radial-gradient(circle at 80% 0%, rgba(63, 81, 181, 0.12), transparent 28%),
+    #060b14;
 }
 
 a {
@@ -52,7 +76,7 @@ textarea {
   border-radius: 0.85rem;
   border: 1px solid var(--border-soft);
   font: inherit;
-  background: #fff;
+  background: var(--bg-card);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 

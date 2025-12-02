@@ -125,7 +125,7 @@ export const Sidebar = () => {
         gap: '2rem',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+      <Link to="/app/overview" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'inherit', textDecoration: 'none' }}>
         <img src={logo} alt="Process SA" style={{ width: '42px', height: '42px' }} />
         <div>
           <h1 style={{ margin: 0, fontSize: '1.3rem', letterSpacing: 0.2 }}>Process SA</h1>
@@ -133,7 +133,7 @@ export const Sidebar = () => {
             Perfil: {currentRole?.name ?? 'Sin rol'}
           </small>
         </div>
-      </div>
+      </Link>
 
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         {groupedRoutes.map(([section, routes]) => (

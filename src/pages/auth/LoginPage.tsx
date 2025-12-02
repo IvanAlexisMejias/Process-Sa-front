@@ -1,8 +1,9 @@
-﻿import type { FormEvent } from "react";
+import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "@/context/AppContext";
 import { apiFetch } from "@/services/api";
+import logo from "@/assets/logo.svg";
 
 interface PublicOptions {
   roles: { id: string; name: string }[];
@@ -18,7 +19,7 @@ export const LoginPage = () => {
   const { login, loading } = useAppContext();
   const [mode, setMode] = useState<AuthMode>("login");
   const [options, setOptions] = useState<PublicOptions>(defaultOptions);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
   const [loginForm, setLoginForm] = useState({
     email: "gabriela@processsa.com",
@@ -77,53 +78,93 @@ export const LoginPage = () => {
   const isLogin = mode === "login";
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
-        background: "linear-gradient(135deg,#0c1e42,#172b4d)",
-        padding: "2rem",
-      }}
-    >
+    <div style={{ minHeight: "100vh", position: "relative", background: "#0c1e42", overflow: "hidden" }}>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(circle at 15% 20%, rgba(27,99,216,0.35), transparent 32%), radial-gradient(circle at 85% 10%, rgba(67,198,172,0.25), transparent 28%), linear-gradient(140deg, #0c1e42 0%, #0f3f8c 50%, #0b1e3d 100%)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(600px at 80% 60%, rgba(255,255,255,0.06), transparent 50%), radial-gradient(400px at 10% 80%, rgba(255,255,255,0.04), transparent 50%)",
+        }}
+      />
       <div
         className="card"
         style={{
-          width: "min(1040px, 100%)",
+          position: "relative",
+          width: "min(1100px, 92%)",
+          margin: "0 auto",
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: "1.1fr 0.9fr",
           gap: "2rem",
           alignItems: "stretch",
-          padding: "0",
+          padding: 0,
           overflow: "hidden",
+          marginTop: "5vh",
+          marginBottom: "5vh",
+          background: "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          backdropFilter: "blur(10px)",
+          boxShadow: "0 25px 70px rgba(0,0,0,0.35)",
         }}
       >
         <div
           style={{
-            background: "linear-gradient(160deg,#0052cc,#0a64ff)",
+            background: "linear-gradient(170deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))",
             color: "#fff",
-            padding: "2.5rem",
+            padding: "2.75rem",
             display: "flex",
             flexDirection: "column",
-            gap: "1.5rem",
+            gap: "1.75rem",
           }}
         >
-          <div>
-            <p style={{ margin: 0, textTransform: "uppercase", letterSpacing: 2 }}>Process SA</p>
-            <h1 style={{ margin: "0.35rem 0 0" }}>Plataforma de procesos</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.9rem" }}>
+            <img src={logo} alt="Process SA" style={{ width: "64px", height: "64px" }} />
+            <div>
+              <p style={{ margin: 0, textTransform: "uppercase", letterSpacing: 2, fontSize: "0.8rem", color: "rgba(255,255,255,0.7)" }}>
+                Process SA
+              </p>
+              <h1 style={{ margin: "0.2rem 0 0" }}>Plataforma de procesos</h1>
+            </div>
           </div>
-          <p style={{ margin: 0, color: "rgba(255,255,255,0.85)" }}>
-            Autentícate con tus credenciales corporativas o crea una cuenta indicando tu perfil.
-            El mismo backend NestJS + Prisma asegura la sincronización con PostgreSQL.
+          <p style={{ margin: 0, color: "rgba(255,255,255,0.85)", fontSize: "1rem", lineHeight: 1.5 }}>
+            Autentícate con tus credenciales corporativas o crea una cuenta indicando tu perfil. NestJS + Prisma +
+            PostgreSQL mantienen tu operación sincronizada.
           </p>
-          <ul style={{ color: "rgba(255,255,255,0.85)", paddingLeft: "1.25rem", margin: 0 }}>
-            <li>gabriela@processsa.com · Administradora</li>
-            <li>joaquin@processsa.com · Diseñador</li>
-            <li>maria@processsa.com · Funcionario</li>
-          </ul>
+          <div
+            style={{
+              borderRadius: "1rem",
+              padding: "1rem",
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <p style={{ margin: "0 0 0.5rem", color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>Usuarios demo</p>
+            <ul style={{ color: "rgba(255,255,255,0.85)", paddingLeft: "1.25rem", margin: 0, lineHeight: 1.6 }}>
+              <li>gabriela@processsa.com · Administradora</li>
+              <li>joaquin@processsa.com · Diseñador</li>
+              <li>maria@processsa.com · Funcionario</li>
+            </ul>
+          </div>
+          <div
+            style={{
+              height: "220px",
+              borderRadius: "1.25rem",
+              background:
+                "radial-gradient(circle at 25% 30%, rgba(67,198,172,0.25), transparent 42%), radial-gradient(circle at 75% 20%, rgba(27,99,216,0.35), transparent 40%), linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04))",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          />
         </div>
 
-        <div style={{ padding: "2.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+        <div style={{ padding: "2.75rem", display: "flex", flexDirection: "column", gap: "1.5rem", background: "#fff" }}>
           <div style={{ display: "flex", gap: "0.75rem" }}>
             <button
               type="button"

@@ -1,4 +1,4 @@
-﻿import type { ReactElement } from "react";
+import type { ReactElement } from "react";
 import type { RoleKey } from "@/types/domain";
 import { OverviewPage } from "@/pages/dashboard/OverviewPage";
 import { UsersPage } from "@/pages/admin/UsersPage";
@@ -48,7 +48,7 @@ export const appRoutes: AppRoute[] = [
     path: "/app/admin/users",
     label: "Usuarios y roles",
     description: "Alta de usuarios y definición de perfiles",
-    icon: "🧑‍💼",
+    icon: "🛡️",
     roles: ["ADMIN"],
     section: "admin",
     cases: ["CU1", "CU4"],
@@ -68,7 +68,7 @@ export const appRoutes: AppRoute[] = [
     path: "/app/designer/flows",
     label: "Flujos y plantillas",
     description: "Diseño e instanciación de procesos",
-    icon: "🧩",
+    icon: "🌀",
     roles: ["ADMIN", "DESIGNER"],
     section: "designer",
     cases: ["CU5", "CU19"],
@@ -88,7 +88,7 @@ export const appRoutes: AppRoute[] = [
     path: "/app/tasks/assigned",
     label: "Tareas delegadas",
     description: "Control de responsables",
-    icon: "🗂️",
+    icon: "🔀",
     roles: ["ADMIN", "DESIGNER", "FUNCTIONARY"],
     section: "tasks",
     cases: ["CU7", "CU9", "CU10"],

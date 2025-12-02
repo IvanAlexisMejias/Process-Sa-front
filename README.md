@@ -23,6 +23,7 @@ SPA en React 19 + TypeScript que consume el backend NestJS/Prisma. Incluye naveg
 - Convenciones de estilo y calidad
 - FAQ corta
 - Próximos pasos y escalabilidad
+- Enfoque en el caso "Control de Tareas" (PDF)
 
 ---
 
@@ -127,6 +128,23 @@ npm run preview      # preview local del build
 
 ---
 
+## Enfoque en el caso "Control de Tareas" (PDF)
+
+**Qué problema resuelve**: Falta de plataforma para organizar procesos, asignar tareas, controlar plazos y obtener indicadores en tiempo real. El front implementa paneles y flujos para dar visibilidad y control a admin/diseñador/funcionario.
+
+**Cómo se refleja en la UI**:
+- Organización y roles: login por rol, sidebar contextual, accesos a usuarios/unidades y flujos.
+- Flujos tipo e instancias: creación/edición de plantillas, instanciación con tareas por etapa y responsables; vista de ejecución con barras de avance.
+- Control de tareas: panel personal con estados, slider de progreso, reporte de problemas/bloqueos, alertas.
+- Indicadores: dashboard con KPIs, ranking por unidad y persona, distribución por estado, alertas.
+- Semáforo/plazos: estados y barras de progreso visibles en flujos y tareas; salud por flujo/etapa.
+
+**Cobertura de requerimientos del PDF (funcionales)**: roles (admin/designer/funcionario), CRUD de unidades/usuarios, flujos y tareas con dependencias básicas, progreso y semáforo visual, reporte de problemas y alertas, carga de trabajo resumida. Pendientes menores: rechazo con justificación explícita, módulo escritorio nativo, reportes PDF.
+
+**Requerimientos no funcionales (PDF)**: se cumple modelo por capas (front+API), responsive; no se usa Oracle/PLSQL (se usa API REST con PostgreSQL). Notificaciones email/PDF pueden añadirse vía backend y UI de alertas.
+
+---
+
 ## Componentes y páginas clave
 
 | Área        | Archivo                                     | Qué hace                                                      |
@@ -145,8 +163,8 @@ npm run preview      # preview local del build
 
 Definidos en `src/types/domain.ts`:
 - `FlowInstance`: `state` (`no_iniciado`, `en_progreso`, `terminada`), `progress`, `stageStatuses`, `ownerUnit`.
-|- `Task`: `progress`, `stageStatusId`, `ownerUnitId`, problemas, historial.|
-|- `FlowStageStatusEntry`: estado/progreso por etapa y rol dueño.|
+- `Task`: `progress`, `stageStatusId`, `ownerUnitId`, problemas, historial.
+- `FlowStageStatusEntry`: estado/progreso por etapa y rol dueño.
 
 ---
 

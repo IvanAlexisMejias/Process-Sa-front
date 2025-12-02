@@ -20,6 +20,7 @@ export const FlowsPage = () => {
   const {
     flowTemplates,
     flowInstances,
+    tasks,
     roles,
     units,
     users,
@@ -665,35 +666,69 @@ export const FlowsPage = () => {
                   </div>
                 </td>
                 <td>
-                  <div style={{ display: "grid", gap: "0.35rem", minWidth: "180px" }}>
-                    {instance.stageStatuses.map((stage) => (
-                      <div key={stage.id}>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem" }}>
-                          <span>{stage.stage.name}</span>
-                          <span>{stage.progress}%</span>
-                        </div>
-                        <div
-                          style={{
-                            width: "100%",
-                            background: "var(--bg-muted)",
-                            borderRadius: 10,
-                            overflow: "hidden",
-                            height: 8,
-                          }}
-                        >
+                  <div style={{ display: "grid", gap: "0.5rem", minWidth: "260px" }}>
+                    {instance.stageStatuses.map((stage) => {
+                      const stageTasks = tasks.filter((task) => task.stageStatusId === stage.id);
+                      return (
+                        <div key={stage.id} style={{ display: "grid", gap: "0.25rem" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.9rem", alignItems: "center" }}>
+                            <span>{stage.stage.name}</span>
+                            <strong style={{ color: stage.progress === 100 ? "var(--success)" : "var(--text-muted)", fontSize: "0.9rem" }}>
+                              {stage.progress}%
+                            </strong>
+                          </div>
                           <div
                             style={{
-                              width: `${stage.progress}%`,
-                              height: "100%",
-                              background:
-                                stage.progress === 100
-                                  ? "linear-gradient(90deg,#43c6ac,#1b63d8)"
-                                  : "linear-gradient(90deg,#f6c343,#f38b2f)",
+                              width: "100%",
+                              background: "var(--bg-muted)",
+                              borderRadius: 10,
+                              overflow: "hidden",
+                              height: 8,
                             }}
-                          />
+                          >
+                            <div
+                              style={{
+                                width: `${stage.progress}%`,
+                                height: "100%",
+                                background:
+                                  stage.progress === 100
+                                    ? "linear-gradient(90deg,#43c6ac,#1b63d8)"
+                                    : "linear-gradient(90deg,#f6c343,#f38b2f)",
+                              }}
+                            />
+                          </div>
+                          {stageTasks.length > 0 && (
+                            <div style={{ display: "grid", gap: "0.2rem", paddingLeft: "0.35rem" }}>
+                              {stageTasks.map((task) => (
+                                <div key={task.id}>
+                                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
+                                    <span style={{ color: "var(--text-muted)" }}>{task.title}</span>
+                                    <span style={{ color: "var(--text-muted)" }}>{task.progress}%</span>
+                                  </div>
+                                  <div
+                                    style={{
+                                      width: "100%",
+                                      background: "var(--bg-muted)",
+                                      borderRadius: 8,
+                                      overflow: "hidden",
+                                      height: 6,
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        width: `${task.progress}%`,
+                                        height: "100%",
+                                        background: "linear-gradient(90deg,#1b63d8,#43c6ac)",
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </td>
                 <td>{formatState(instance.state)}</td>

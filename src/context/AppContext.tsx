@@ -28,6 +28,7 @@ const normalizeTask = (task: any): Task => ({
   ownerId: task.ownerId,
   assignerId: task.assignerId,
   flowInstanceId: task.flowInstanceId ?? undefined,
+  flowInstance: task.flowInstance ?? undefined,
   priority: lower<Task['priority']>(task.priority, 'medium' as Task['priority']),
   deadline: task.deadline,
   createdAt: task.createdAt ?? task.deadline ?? new Date().toISOString(),
@@ -49,6 +50,7 @@ const normalizeTask = (task: any): Task => ({
   })),
   owner: task.owner ?? null,
   assigner: task.assigner ?? null,
+  ownerUnitId: task.ownerUnitId ?? task.owner?.unit?.id ?? task.flowInstance?.ownerUnit?.id ?? task.flowInstance?.ownerUnitId ?? null,
 });
 
 const normalizeFlowInstance = (instance: any): FlowInstance => ({

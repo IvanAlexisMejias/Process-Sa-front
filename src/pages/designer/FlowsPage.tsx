@@ -595,8 +595,8 @@ export const FlowsPage = () => {
                   type="button"
                   className="btn btn-outline"
                   onClick={() =>
-                    askConfirm("¿Eliminar esta plantilla? No debe tener instancias activas.", () => {
-                      deleteFlowTemplate(template.id);
+                    askConfirm("¿Eliminar esta plantilla? No debe tener instancias activas.", async () => {
+                      await deleteFlowTemplate(template.id);
                       showToast("Plantilla eliminada", "info");
                     })
                   }
@@ -641,8 +641,8 @@ export const FlowsPage = () => {
                     type="button"
                     className="btn btn-outline"
                     onClick={() =>
-                      askConfirm("¿Eliminar esta instancia? Se borrarán sus tareas asociadas.", () => {
-                        deleteFlowInstance(instance.id);
+                      askConfirm("¿Eliminar esta instancia? Se borrarán sus tareas asociadas.", async () => {
+                        await deleteFlowInstance(instance.id);
                         showToast("Instancia eliminada", "info");
                       })
                     }

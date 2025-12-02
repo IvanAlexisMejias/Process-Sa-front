@@ -304,6 +304,15 @@ export const MyTasksPage = () => {
                           Aceptar
                         </button>
                       )}
+                      {task.status !== "blocked" ? (
+                        <button type="button" className="btn btn-outline" onClick={() => handleStatusChange(task.id, "blocked")}>
+                          Bloquear
+                        </button>
+                      ) : (
+                        <button type="button" className="btn btn-outline" onClick={() => handleStatusChange(task.id, "in_progress")}>
+                          Desbloquear
+                        </button>
+                      )}
                       {task.status !== "completed" && currentUser && (
                         <button type="button" className="btn btn-primary" onClick={() => handleStatusChange(task.id, "completed", 100)}>
                           Terminar
